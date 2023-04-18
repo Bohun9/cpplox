@@ -1,0 +1,32 @@
+CXX := g++
+CXXFLAGS := -O2
+BUILD_DIR := build
+
+BUILD_OBJ := $(BUILD_DIR)/lox.o \
+     	     $(BUILD_DIR)/error_handler.o \
+     	     $(BUILD_DIR)/scanner.o \
+     	     $(BUILD_DIR)/token.o
+
+SOURCE := lox/lox.cpp \
+		  lox/error/error_handler.cpp \
+		  lox/error/error_handler.hpp \
+		  lox/lexer/scanner.cpp \
+		  lox/lexer/scanner.hpp \
+		  lox/lexer/token.cpp \
+		  lox/lexer/token.hpp \
+
+$(BUILD_DIR)/lox: $(BUILD_OBJ)
+	$(CXX) -o $@ $^
+
+$(BUILD_DIR)/lox.o: $(SOURCE)
+	$(CXX) -c -o $@ lox/lox.cpp
+
+$(BUILD_DIR)/error_handler.o: $(SOURCE)
+	$(CXX) -c -o $@ lox/error/error_handler.cpp
+
+$(BUILD_DIR)/scanner.o: $(SOURCE)
+	$(CXX) -c -o $@ lox/lexer/scanner.cpp
+
+$(BUILD_DIR)/token.o: $(SOURCE)
+	$(CXX) -c -o $@ lox/lexer/token.cpp
+
