@@ -77,7 +77,7 @@ void Scanner::addToken(TokenType type) {
     addToken(type, "");
 }
 
-void Scanner::addToken(TokenType type, std::string literal) {
+void Scanner::addToken(TokenType type, std::any literal) {
     std::string lexeme = std::string(source.begin() + start, source.begin() + current);
     tokens.push_back(Token(type, lexeme, literal, line));
 }
@@ -152,7 +152,7 @@ void Scanner::number() {
         }
     }
 
-    std::string literal(source.begin() + start, source.begin() + current);
+    double literal = std::stod(std::string(source.begin() + start, source.begin() + current));
     addToken(TokenType::NUMBER, literal);
 }
 

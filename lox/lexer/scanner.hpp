@@ -29,7 +29,7 @@ private:
 
     void addToken(TokenType type);
 
-    void addToken(TokenType type, std::string literal);
+    void addToken(TokenType type, std::any literal);
 
     bool match(char expected);
 

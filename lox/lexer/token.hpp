@@ -34,14 +34,10 @@ enum class TokenType {
 struct Token {
     TokenType type;
     std::string lexeme;
-    /* 
-     * If primitive types are instances of class in host lang then literal should have type Object.
-     * In C++ it's too much trouble to create abstract class and casting to subclasses.
-     */
-    std::string literal;
+    std::any literal;
     int line;
 
-    Token(TokenType type, std::string lexeme, std::string literal, int line);
+    Token(TokenType type, std::string lexeme, std::any literal, int line);
 
     std::string toString();
 };

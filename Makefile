@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS := -O2
+CXXFLAGS := -std=c++17 -O2
 BUILD_DIR := build
 
 BUILD_OBJ := $(BUILD_DIR)/lox.o \
@@ -16,17 +16,31 @@ SOURCE := lox/lox.cpp \
 		  lox/lexer/token.hpp \
 
 $(BUILD_DIR)/lox: $(BUILD_OBJ)
-	$(CXX) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(BUILD_DIR)/ast_printer: $(BUILD_DIR)/ast_printer.o $(BUILD_DIR)/token.o
+	$(CXX) $(CXXFLAGS) -o $@ $^
 
 $(BUILD_DIR)/lox.o: $(SOURCE)
-	$(CXX) -c -o $@ lox/lox.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ lox/lox.cpp
 
 $(BUILD_DIR)/error_handler.o: $(SOURCE)
-	$(CXX) -c -o $@ lox/error/error_handler.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ lox/error/error_handler.cpp
 
 $(BUILD_DIR)/scanner.o: $(SOURCE)
-	$(CXX) -c -o $@ lox/lexer/scanner.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ lox/lexer/scanner.cpp
 
 $(BUILD_DIR)/token.o: $(SOURCE)
-	$(CXX) -c -o $@ lox/lexer/token.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ lox/lexer/token.cpp
+
+$(BUILD_DIR)/ast_printer.o: lox/ast/ast_printer.cpp lox/ast/expr.hpp lox/lexer/token.hpp
+	$(CXX) $(CXXFLAGS) -c -o $@ lox/ast/ast_printer.cpp
+
+$(BUILD_DIR)/generate_ast: tools/generate_ast.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+PHONY: tools print
+tools: $(BUILD_DIR)/generate_ast
+
+print: $(BUILD_DIR)/ast_printer 
 
