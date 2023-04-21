@@ -3,6 +3,7 @@
 #include "../lexer/token.hpp"
 #include "../ast/ast.hpp"
 #include "../error/error_handler.hpp"
+#include "../error/exceptions.hpp"
 
 struct ParseError;
 
@@ -14,11 +15,12 @@ private:
 
 public:
     Parser(std::vector<Token> &tokens, ErrorHandler &errorHandler);
-    std::shared_ptr<Expr> parse();
+    std::vector<std::shared_ptr<Stmt>> parse();
 
 private:
     // grammar functions
     std::shared_ptr<Expr> expression();
+    std::shared_ptr<Expr> assignment();
     std::shared_ptr<Expr> equality();
     std::shared_ptr<Expr> comparison();
     std::shared_ptr<Expr> addition();
@@ -26,11 +28,19 @@ private:
     std::shared_ptr<Expr> unary();
     std::shared_ptr<Expr> primary();
 
+    std::shared_ptr<Stmt> declaration();
+    std::shared_ptr<Stmt> statement();
+    std::shared_ptr<Stmt> print();
+    std::shared_ptr<Stmt> var();
+    std::shared_ptr<Stmt> expressionStmt();
+    std::vector<std::shared_ptr<Stmt>> block();
+
     Token advance();
     Token previous();
     Token peek();
     bool isAtEnd();
     bool match(std::vector<TokenType>);
+    bool check(std::vector<TokenType>);
     void consume(TokenType, std::string);
 
     ParseError error(Token token, std::string message);

@@ -1,7 +1,5 @@
 #include "parser.hpp"
 
-struct ParseError {};
-
 ParseError Parser::error(Token token, std::string message) {
     errorHandler.error(token, message);
     return ParseError();
@@ -12,12 +10,12 @@ Parser::Parser(std::vector<Token> &tokens, ErrorHandler &errorHandler) : current
     assert(tokens.back().type == TokenType::END_OF_FILE);
 }
 
-std::shared_ptr<Expr> Parser::parse() {
-    try {
-        return expression();
-    } catch (ParseError &e) {
-        return nullptr;
+std::vector<std::shared_ptr<Stmt>> Parser::parse() {
+    std::vector<std::shared_ptr<Stmt>> statements;
+    while (!isAtEnd()) {
+        statements.push_back(declaration());
     }
+    return statements;
 }
 
 Token Parser::advance() {
@@ -34,6 +32,15 @@ Token Parser::peek() {
 
 bool Parser::isAtEnd() {
     return tokens[current].type == TokenType::END_OF_FILE;
+}
+
+bool Parser::check(std::vector<TokenType> types) {
+    for (auto type : types) {
+        if (tokens[current].type == type) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool Parser::match(std::vector<TokenType> types) {
@@ -55,7 +62,20 @@ void Parser::consume(TokenType expected, std::string message) {
 }
 
 std::shared_ptr<Expr> Parser::expression() {
-    return equality();
+    return assignment();
+}
+
+std::shared_ptr<Expr> Parser::assignment() {
+    auto lhs = equality();
+    if (match({TokenType::EQUAL})) {
+        auto op = previous();
+        auto rhs = assignment(); 
+        if (dynamic_cast<VariableExpr*>(lhs.get()) != nullptr) {
+            return std::make_shared<AssignmentExpr>(dynamic_cast<VariableExpr*>(lhs.get())->name, rhs);
+        }
+        throw error(op, "Invalid assignment target.");
+    }
+    return lhs;
 }
 
 std::shared_ptr<Expr> Parser::equality() {
@@ -111,6 +131,10 @@ std::shared_ptr<Expr> Parser::primary() {
     if (match({TokenType::FALSE})) return std::make_shared<LiteralExpr>(false);
     if (match({TokenType::NIL}))   return std::make_shared<LiteralExpr>(nullptr);
 
+    if (match({TokenType::IDENTIFIER})) {
+        return std::make_shared<VariableExpr>(previous());
+    }
+
     if (match({TokenType::NUMBER, TokenType::STRING})) {
         return std::make_shared<LiteralExpr>(previous().literal); 
     }
@@ -125,7 +149,9 @@ std::shared_ptr<Expr> Parser::primary() {
 }
 
 void Parser::synchronize() {
+    if (isAtEnd()) return;
     advance();
+
     while (!isAtEnd()) {
         if (previous().type == TokenType::SEMICOLON) {
             return;
@@ -143,5 +169,54 @@ void Parser::synchronize() {
         }
         advance();
     }
+}
+
+std::shared_ptr<Stmt> Parser::declaration() {
+    try {
+        return match({TokenType::VAR}) ? var() : statement();
+    } catch (ParseError &e) {
+        synchronize();
+        return nullptr;
+    }
+}
+
+std::shared_ptr<Stmt> Parser::statement() {
+    if (match({TokenType::PRINT})) return print();
+    if (match({TokenType::LEFT_BRACE})) return std::make_shared<BlockStmt>(block());
+    return expressionStmt();
+}
+
+std::shared_ptr<Stmt> Parser::print() {
+    auto e = expression();
+    consume(TokenType::SEMICOLON, "Expected ';' after value.");
+    return std::make_shared<PrintStmt>(e);
+}
+
+std::shared_ptr<Stmt> Parser::expressionStmt() {
+    auto e = expression();
+    consume(TokenType::SEMICOLON, "Expected ';' after expression.");
+    return std::make_shared<ExpressionStmt>(e);
+}
+
+std::vector<std::shared_ptr<Stmt>> Parser::block() {
+    std::vector<std::shared_ptr<Stmt>> statements;
+    while (!isAtEnd() && !check({TokenType::RIGHT_BRACE})) {
+        statements.push_back(declaration());
+    }
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after block.");
+    return statements;
+}
+
+std::shared_ptr<Stmt> Parser::var() {
+    consume(TokenType::IDENTIFIER, "Expected variable name.");
+    auto name = previous();
+
+    std::shared_ptr<Expr> initializer = nullptr;
+    if (match({TokenType::EQUAL})) {
+        initializer = expression();
+    }
+    consume(TokenType::SEMICOLON, "Expected ';' after varaible declaration.");
+
+    return std::make_shared<VarStmt>(name, initializer);
 }
 

@@ -6,7 +6,7 @@
 #include "ast/ast_printer.hpp"
 #include "interpreter/interpreter.hpp"
 
-void run(std::string source, ErrorHandler errorHandler) {
+void run(std::string source, ErrorHandler &errorHandler, Interpreter &interpreter) {
     Scanner scanner(source, errorHandler);
     auto tokens = scanner.scanTokens();
 
@@ -17,7 +17,6 @@ void run(std::string source, ErrorHandler errorHandler) {
 
     if (errorHandler.hadError) return;
 
-    Interpreter interpreter(errorHandler);
     interpreter.interpret(ast);
 }
 
@@ -27,7 +26,8 @@ void runFile(char *filePath) {
     buffer << t.rdbuf();
 
     ErrorHandler errorHandler;
-    run(buffer.str(), errorHandler);
+    Interpreter interpreter(errorHandler);
+    run(buffer.str(), errorHandler, interpreter);
 
     if (errorHandler.hadError) {
         exit(65);
@@ -36,12 +36,15 @@ void runFile(char *filePath) {
 
 void runPrompt() {
     std::string line;
+    ErrorHandler errorHandler;
+    Interpreter interpreter(errorHandler);
+
     for (;;) {
         std::cout << "> ";
         if (!std::getline(std::cin, line)) break;
 
-        ErrorHandler errorHandler;
-        run(line, errorHandler);
+        run(line, errorHandler, interpreter);
+        errorHandler.hadError = false;
     }
 }
 

@@ -1,8 +1,10 @@
 #include "interpreter.hpp"
 
-void Interpreter::interpret(std::shared_ptr<Expr> expr) {
+void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> statements) {
     try {
-        std::cout << stringify(evaluate(expr)) << "\n";
+        for (auto statement : statements) {
+            execute(statement);
+        }
     } catch (RunTimeError &e) {
         errorHandler.error(e);
     }
@@ -14,6 +16,10 @@ std::any Interpreter::evaluate(std::shared_ptr<Expr> e) {
     auto res = stack.back();
     stack.pop_back();
     return res;
+}
+
+void Interpreter::execute(std::shared_ptr<Stmt> s) {
+    s->accept(*this);
 }
 
 void Interpreter::Return(std::any v) {
@@ -144,6 +150,16 @@ void Interpreter::visitUnaryExpr(std::shared_ptr<UnaryExpr> expr) {
     }
 }
 
+void Interpreter::visitVariableExpr(std::shared_ptr<VariableExpr> expr) {
+    Return(environment->get(expr->name));
+}
+
+void Interpreter::visitAssignmentExpr(std::shared_ptr<AssignmentExpr> expr) {
+    std::any v = evaluate(expr->expr);
+    environment->update(expr->name, v);
+    Return(v);
+}
+
 bool Interpreter::isEqual(std::any lhs, std::any rhs) {
     if (lhs.type() != rhs.type()) return false;
     if (lhs.type() == typeid(std::nullptr_t)) return true;
@@ -162,5 +178,37 @@ bool Interpreter::isTruthy(std::any v) {
     if (v.type() == typeid(std::nullptr_t)) return false;
     if (v.type() == typeid(bool)) return std::any_cast<bool>(v);
     return true;
+}
+
+void Interpreter::visitExpressionStmt(std::shared_ptr<ExpressionStmt> s) {
+    evaluate(s->expr);
+}
+
+void Interpreter::visitPrintStmt(std::shared_ptr<PrintStmt> s) {
+    auto v = evaluate(s->expr);
+    std::cout << stringify(v) << "\n";
+}
+
+void Interpreter::visitVarStmt(std::shared_ptr<VarStmt> expr) {
+    std::any value = nullptr;
+    if (expr->initializer != nullptr) {
+        value = evaluate(expr->initializer);
+    }
+    environment->define(expr->name.lexeme, value);
+}
+
+void Interpreter::visitBlockStmt(std::shared_ptr<BlockStmt> stmt) {
+    auto new_scope = std::make_shared<Environment>(environment);
+    environment = new_scope;
+
+    struct RAII {
+        std::shared_ptr<Environment> &e;
+        RAII(std::shared_ptr<Environment> &e) : e(e) {}
+        ~RAII() { e = e->enclosing; }
+    } raii(environment);
+
+    for (auto statement : stmt->statements) {
+        execute(statement);
+    }
 }
 

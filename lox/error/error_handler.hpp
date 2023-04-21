@@ -3,9 +3,7 @@
 #include <bits/stdc++.h>
 
 #include "../lexer/token.hpp"
-#include "../interpreter/interpreter.hpp"
-
-struct RunTimeError;
+#include "../error/exceptions.hpp"
 
 struct ErrorHandler {
     bool hadError;

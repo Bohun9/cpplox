@@ -74,10 +74,6 @@ void defineVisitor(std::string baseName, std::vector<std::string> types) {
 }
 
 void defineAst(std::string baseName, std::vector<std::string> types) {
-    std::cout << "#pragma once\n";
-    std::cout << "#include <bits/stdc++.h>\n";
-    std::cout << "#include \"../lexer/token.hpp\"\n\n";
-
     // Signatures of subclasses
     for (auto type : types) {
         auto colon = std::find(type.begin(), type.end(), ':');
@@ -101,11 +97,24 @@ void defineAst(std::string baseName, std::vector<std::string> types) {
 }
 
 int main() {
+    std::cout << "#pragma once\n";
+    std::cout << "#include <bits/stdc++.h>\n";
+    std::cout << "#include \"../lexer/token.hpp\"\n\n";
+
     defineAst("Expr", {
-        "Binary   : std::shared_ptr<Expr> lhs, Token op, std::shared_ptr<Expr> rhs",
-        "Unary    : Token op, std::shared_ptr<Expr> expr",
-        "Literal  : std::any value",
-        "Grouping : std::shared_ptr<Expr> expr"
+        "Binary     : std::shared_ptr<Expr> lhs, Token op, std::shared_ptr<Expr> rhs",
+        "Unary      : Token op, std::shared_ptr<Expr> expr",
+        "Literal    : std::any value",
+        "Grouping   : std::shared_ptr<Expr> expr",
+        "Variable   : Token name",
+        "Assignment : Token name, std::shared_ptr<Expr> expr"
+    });
+
+    defineAst("Stmt", {
+        "Expression : std::shared_ptr<Expr> expr",
+        "Print      : std::shared_ptr<Expr> expr",
+        "Var        : Token name, std::shared_ptr<Expr> initializer",
+        "Block      : std::vector<Stmt> statements"
     });
 
     return 0;
