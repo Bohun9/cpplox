@@ -2,14 +2,22 @@
 
 #include "error/error_handler.hpp"
 #include "lexer/scanner.hpp"
+#include "parser/parser.hpp"
+#include "ast/ast_printer.hpp"
 
 void run(std::string source, ErrorHandler errorHandler) {
     Scanner scanner(source, errorHandler);
     auto tokens = scanner.scanTokens();
 
-    for (auto token : tokens) {
-        std::cout << token.toString() << "\n";
-    }
+    if (errorHandler.hadError) return;
+
+    Parser parser(tokens, errorHandler);
+    auto ast = parser.parse();
+
+    if (errorHandler.hadError) return;
+
+    AstPrinter astPrinter;
+    std::cout << astPrinter.print(ast) << "\n";
 }
 
 void runFile(char *filePath) {
