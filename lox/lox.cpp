@@ -4,6 +4,7 @@
 #include "lexer/scanner.hpp"
 #include "parser/parser.hpp"
 #include "ast/ast_printer.hpp"
+#include "interpreter/interpreter.hpp"
 
 void run(std::string source, ErrorHandler errorHandler) {
     Scanner scanner(source, errorHandler);
@@ -16,8 +17,8 @@ void run(std::string source, ErrorHandler errorHandler) {
 
     if (errorHandler.hadError) return;
 
-    AstPrinter astPrinter;
-    std::cout << astPrinter.print(ast) << "\n";
+    Interpreter interpreter(errorHandler);
+    interpreter.interpret(ast);
 }
 
 void runFile(char *filePath) {

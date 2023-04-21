@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
 #include "ast_printer.hpp"
-#include "expr.hpp"
+#include "ast.hpp"
 #include "../lexer/token.hpp"
 
 AstPrinter::AstPrinter() { stack = {}; }

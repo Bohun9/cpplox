@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
 #include "../lexer/token.hpp"
-#include "../ast/expr.hpp"
+#include "../ast/ast.hpp"
 #include "../error/error_handler.hpp"
 
 struct ParseError;

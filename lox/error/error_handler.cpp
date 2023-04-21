@@ -2,6 +2,10 @@
 
 #include "error_handler.hpp"
 
+void ErrorHandler::error(RunTimeError &e) {
+    report(e.token.line, e.token.lexeme, e.message);
+}
+
 void ErrorHandler::error(Token token, std::string message) {
     report(token.line, token.lexeme, message);
 }

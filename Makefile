@@ -8,6 +8,7 @@ BUILD_OBJ := $(BUILD_DIR)/lox.o \
      	     $(BUILD_DIR)/token.o \
      	     $(BUILD_DIR)/parser.o \
 			 $(BUILD_DIR)/ast_printer.o \
+			 $(BUILD_DIR)/interpreter.o \
 
 SOURCE := lox/lox.cpp \
 		  lox/error/error_handler.cpp \
@@ -18,8 +19,10 @@ SOURCE := lox/lox.cpp \
 		  lox/lexer/token.hpp \
 		  lox/parser/parser.cpp \
 		  lox/parser/parser.hpp \
-		  lox/ast//ast_printer.cpp \
-		  lox/ast//ast_printer.hpp \
+		  lox/ast/ast_printer.cpp \
+		  lox/ast/ast_printer.hpp \
+		  lox/interpreter/interpreter.cpp \
+		  lox/interpreter/interpreter.hpp \
 
 $(BUILD_DIR)/lox: $(BUILD_OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^
@@ -44,6 +47,9 @@ $(BUILD_DIR)/parser.o: $(SOURCE)
 
 $(BUILD_DIR)/ast_printer.o: $(SOURCE)
 	$(CXX) $(CXXFLAGS) -c -o $@ lox/ast/ast_printer.cpp
+
+$(BUILD_DIR)/interpreter.o: $(SOURCE)
+	$(CXX) $(CXXFLAGS) -c -o $@ lox/interpreter/interpreter.cpp
 
 $(BUILD_DIR)/generate_ast: tools/generate_ast.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^

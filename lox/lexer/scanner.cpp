@@ -3,22 +3,22 @@
 Scanner::Scanner(std::string &source, ErrorHandler &errorHandler) :
     source(source), errorHandler(errorHandler), start(0), current(0), line(1), tokens({})
 {
-    keywords["AND"]    = TokenType::AND;
-    keywords["CLASS"]  = TokenType::CLASS;
-    keywords["ELSE"]   = TokenType::ELSE;
-    keywords["FALSE"]  = TokenType::FALSE;
-    keywords["FUN"]    = TokenType::FUN;
-    keywords["FOR"]    = TokenType::FOR;
-    keywords["IF"]     = TokenType::IF;
-    keywords["NIL"]    = TokenType::NIL;
-    keywords["OR"]     = TokenType::OR;
-    keywords["PRINT"]  = TokenType::PRINT;
-    keywords["RETURN"] = TokenType::RETURN;
-    keywords["SUPER"]  = TokenType::SUPER;
-    keywords["THIS"]   = TokenType::THIS;
-    keywords["TRUE"]   = TokenType::TRUE;
-    keywords["VAR"]    = TokenType::VAR;
-    keywords["WHILE"]  = TokenType::WHILE;
+    keywords["and"]    = TokenType::AND;
+    keywords["class"]  = TokenType::CLASS;
+    keywords["else"]   = TokenType::ELSE;
+    keywords["false"]  = TokenType::FALSE;
+    keywords["fun"]    = TokenType::FUN;
+    keywords["for"]    = TokenType::FOR;
+    keywords["if"]     = TokenType::IF;
+    keywords["nil"]    = TokenType::NIL;
+    keywords["or"]     = TokenType::OR;
+    keywords["print"]  = TokenType::PRINT;
+    keywords["return"] = TokenType::RETURN;
+    keywords["super"]  = TokenType::SUPER;
+    keywords["this"]   = TokenType::THIS;
+    keywords["true"]   = TokenType::TRUE;
+    keywords["var"]    = TokenType::VAR;
+    keywords["while"]  = TokenType::WHILE;
 }
 
 std::vector<Token> Scanner::scanTokens() {

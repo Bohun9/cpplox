@@ -2,7 +2,7 @@
 
 #include <bits/stdc++.h>
 
-#include "expr.hpp"
+#include "ast.hpp"
 #include "../lexer/token.hpp"
 
 struct AstPrinter : VisitorExpr {

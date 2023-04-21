@@ -118,6 +118,7 @@ std::shared_ptr<Expr> Parser::primary() {
     if (match({TokenType::LEFT_PAREN})) {
         std::shared_ptr<Expr> e = expression();
         consume(TokenType::RIGHT_PAREN, "Expected ) after expression.");
+        return e;
     }
 
     throw error(peek(), "Expected expression.");
