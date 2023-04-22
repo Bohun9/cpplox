@@ -9,6 +9,7 @@ struct LiteralExpr;
 struct GroupingExpr;
 struct VariableExpr;
 struct AssignmentExpr;
+struct CallExpr;
 
 // C++ does not support virtual template functions :)
 struct VisitorExpr {
@@ -19,6 +20,7 @@ struct VisitorExpr {
     virtual void visitGroupingExpr(std::shared_ptr<GroupingExpr>) = 0;
     virtual void visitVariableExpr(std::shared_ptr<VariableExpr>) = 0;
     virtual void visitAssignmentExpr(std::shared_ptr<AssignmentExpr>) = 0;
+    virtual void visitCallExpr(std::shared_ptr<CallExpr>) = 0;
 };
 
 struct Expr {
@@ -101,12 +103,26 @@ struct AssignmentExpr : public std::enable_shared_from_this<AssignmentExpr>, Exp
     };
 };
 
+struct CallExpr : public std::enable_shared_from_this<CallExpr>, Expr {
+    std::shared_ptr<Expr> callee;
+    Token paren;
+    std::vector<std::shared_ptr<Expr>> arguments;
+
+    CallExpr(std::shared_ptr<Expr> callee, Token paren, std::vector<std::shared_ptr<Expr>> arguments) : callee(callee), paren(paren), arguments(arguments) {}
+
+    virtual void accept(VisitorExpr &visitor) override {
+        visitor.visitCallExpr(shared_from_this());
+    };
+};
+
 struct ExpressionStmt;
 struct PrintStmt;
 struct VarStmt;
 struct BlockStmt;
 struct IfStmt;
 struct WhileStmt;
+struct FunctionStmt;
+struct ReturnStmt;
 
 // C++ does not support virtual template functions :)
 struct VisitorStmt {
@@ -116,6 +132,8 @@ struct VisitorStmt {
     virtual void visitBlockStmt(std::shared_ptr<BlockStmt>) = 0;
     virtual void visitIfStmt(std::shared_ptr<IfStmt>) = 0;
     virtual void visitWhileStmt(std::shared_ptr<WhileStmt>) = 0;
+    virtual void visitFunctionStmt(std::shared_ptr<FunctionStmt>) = 0;
+    virtual void visitReturnStmt(std::shared_ptr<ReturnStmt>) = 0;
 };
 
 struct Stmt {
@@ -183,6 +201,29 @@ struct WhileStmt : public std::enable_shared_from_this<WhileStmt>, Stmt {
 
     virtual void accept(VisitorStmt &visitor) override {
         visitor.visitWhileStmt(shared_from_this());
+    };
+};
+
+struct FunctionStmt : public std::enable_shared_from_this<FunctionStmt>, Stmt {
+    Token name;
+    std::vector<Token> parameters;
+    std::vector<std::shared_ptr<Stmt>> body;
+
+    FunctionStmt(Token name, std::vector<Token> parameters, std::vector<std::shared_ptr<Stmt>> body) : name(name), parameters(parameters), body(body) {}
+
+    virtual void accept(VisitorStmt &visitor) override {
+        visitor.visitFunctionStmt(shared_from_this());
+    };
+};
+
+struct ReturnStmt : public std::enable_shared_from_this<ReturnStmt>, Stmt {
+    Token keyword;
+    std::shared_ptr<Expr> expr;
+
+    ReturnStmt(Token keyword, std::shared_ptr<Expr> expr) : keyword(keyword), expr(expr) {}
+
+    virtual void accept(VisitorStmt &visitor) override {
+        visitor.visitReturnStmt(shared_from_this());
     };
 };
 

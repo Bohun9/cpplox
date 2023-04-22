@@ -3,29 +3,30 @@ CXXFLAGS := -std=c++17 -O2
 BUILD_DIR := build
 
 BUILD_OBJ := $(BUILD_DIR)/lox.o \
-     	     $(BUILD_DIR)/error_handler.o \
-     	     $(BUILD_DIR)/scanner.o \
-     	     $(BUILD_DIR)/token.o \
-     	     $(BUILD_DIR)/parser.o \
-			 $(BUILD_DIR)/ast_printer.o \
-			 $(BUILD_DIR)/interpreter.o \
-			 $(BUILD_DIR)/environment.o \
+             $(BUILD_DIR)/error_handler.o \
+             $(BUILD_DIR)/scanner.o \
+             $(BUILD_DIR)/token.o \
+             $(BUILD_DIR)/parser.o \
+             $(BUILD_DIR)/ast_printer.o \
+             $(BUILD_DIR)/interpreter.o \
+             $(BUILD_DIR)/environment.o \
 
 SOURCE := lox/lox.cpp \
-		  lox/error/error_handler.cpp \
-		  lox/error/error_handler.hpp \
-		  lox/lexer/scanner.cpp \
-		  lox/lexer/scanner.hpp \
-		  lox/lexer/token.cpp \
-		  lox/lexer/token.hpp \
-		  lox/parser/parser.cpp \
-		  lox/parser/parser.hpp \
-		  lox/ast/ast_printer.cpp \
-		  lox/ast/ast_printer.hpp \
-		  lox/interpreter/interpreter.cpp \
-		  lox/interpreter/interpreter.hpp \
-		  lox/interpreter/environment.cpp \
-		  lox/interpreter/environment.hpp \
+          lox/error/error_handler.cpp \
+          lox/error/error_handler.hpp \
+          lox/lexer/scanner.cpp \
+          lox/lexer/scanner.hpp \
+          lox/lexer/token.cpp \
+          lox/lexer/token.hpp \
+          lox/parser/parser.cpp \
+          lox/parser/parser.hpp \
+          lox/ast/ast_printer.cpp \
+          lox/ast/ast_printer.hpp \
+          lox/interpreter/interpreter.cpp \
+          lox/interpreter/interpreter.hpp \
+          lox/interpreter/environment.cpp \
+          lox/interpreter/environment.hpp \
+          lox/interpreter/objects.hpp \
 
 $(BUILD_DIR)/lox: $(BUILD_OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^

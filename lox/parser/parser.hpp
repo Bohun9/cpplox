@@ -12,6 +12,7 @@ private:
     int current;
     std::vector<Token> &tokens;
     ErrorHandler &errorHandler;
+    const int MAX_ARGUMENTS = 128;
 
 public:
     Parser(std::vector<Token> &tokens, ErrorHandler &errorHandler);
@@ -28,6 +29,7 @@ private:
     std::shared_ptr<Expr> addition();
     std::shared_ptr<Expr> multiplication();
     std::shared_ptr<Expr> unary();
+    std::shared_ptr<Expr> call();
     std::shared_ptr<Expr> primary();
 
     std::shared_ptr<Stmt> declaration();
@@ -38,15 +40,17 @@ private:
     std::shared_ptr<Stmt> ifStmt();
     std::shared_ptr<Stmt> whileStmt();
     std::shared_ptr<Stmt> forStmt();
+    std::shared_ptr<Stmt> functionStmt(std::string kind);
+    std::shared_ptr<Stmt> returnStmt();
     std::vector<std::shared_ptr<Stmt>> block();
 
     Token advance();
     Token previous();
     Token peek();
+    Token consume(TokenType, std::string);
     bool isAtEnd();
     bool match(std::vector<TokenType>);
     bool check(std::vector<TokenType>);
-    void consume(TokenType, std::string);
 
     ParseError error(Token token, std::string message);
     void synchronize();

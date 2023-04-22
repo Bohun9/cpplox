@@ -1,4 +1,25 @@
 #include "interpreter.hpp"
+#include "objects.hpp"
+
+Interpreter::Interpreter(ErrorHandler &errorHandler) : errorHandler(errorHandler) {
+    globals = std::make_shared<Environment>(nullptr);
+    environment = globals;
+
+    struct NativeClock : LoxCallable {
+        std::any call(Interpreter &interpreter, std::vector<std::any> arguments) override {
+            return double(time(0));
+        }
+        int arity() override {
+            return 0;
+        }
+        std::string toString() override {
+            return "<native clock fn>";
+        }
+    };
+    std::shared_ptr<LoxCallable> clock(std::make_shared<NativeClock>());
+    globals->define("clock", clock);
+
+}
 
 void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> statements) {
     try {
@@ -40,6 +61,8 @@ std::string Interpreter::stringify(std::any v) {
         return std::any_cast<std::string>(v);
     } else if (v.type() == typeid(std::nullptr_t)) {
         return "nil";
+    } else if (v.type() == typeid(std::shared_ptr<LoxCallable>)) {
+        return std::any_cast<std::shared_ptr<LoxCallable>>(v)->toString();
     }
     assert(0);
 }
@@ -179,6 +202,30 @@ void Interpreter::visitAssignmentExpr(std::shared_ptr<AssignmentExpr> expr) {
     Return(v);
 }
 
+void Interpreter::visitCallExpr(std::shared_ptr<CallExpr> expr) {
+    std::any callee = evaluate(expr->callee);
+
+    std::vector<std::any> arguments;
+    for (auto argument : expr->arguments) {
+        arguments.push_back(evaluate(argument));
+    }
+
+    if (callee.type() == typeid(std::shared_ptr<LoxCallable>)) {
+        auto callable = std::any_cast<std::shared_ptr<LoxCallable>>(callee);
+        if (callable->arity() == arguments.size()) {
+            try {
+                Return(callable->call(*this, arguments));
+            } catch (ReturnValue &returnvalue) {
+                Return(returnvalue.value);
+            }
+        } else {
+            throw RunTimeError(expr->paren, "Expected " + std::to_string(callable->arity()) + " parameters, but got " + std::to_string(arguments.size()) + "arguments.");
+        }
+    } else {
+        throw RunTimeError(expr->paren, "Can only call functions and classes.");
+    }
+}
+
 bool Interpreter::isEqual(std::any lhs, std::any rhs) {
     if (lhs.type() != rhs.type()) return false;
     if (lhs.type() == typeid(std::nullptr_t)) return true;
@@ -217,16 +264,21 @@ void Interpreter::visitVarStmt(std::shared_ptr<VarStmt> expr) {
 }
 
 void Interpreter::visitBlockStmt(std::shared_ptr<BlockStmt> stmt) {
-    auto new_scope = std::make_shared<Environment>(environment);
-    environment = new_scope;
+    executeBlock(stmt->statements, std::make_shared<Environment>(environment));
+}
+
+void Interpreter::executeBlock(std::vector<std::shared_ptr<Stmt>> statements, std::shared_ptr<Environment> newEnvironment) {
+    auto previous = environment;
+    environment = newEnvironment;
 
     struct RAII {
         std::shared_ptr<Environment> &e;
-        RAII(std::shared_ptr<Environment> &e) : e(e) {}
-        ~RAII() { e = e->enclosing; }
-    } raii(environment);
+        std::shared_ptr<Environment> &p;
+        RAII(std::shared_ptr<Environment> &e, std::shared_ptr<Environment> &p) : e(e), p(p) {}
+        ~RAII() { e = p; }
+    } raii(environment, previous);
 
-    for (auto statement : stmt->statements) {
+    for (auto statement : statements) {
         execute(statement);
     }
 }
@@ -244,4 +296,15 @@ void Interpreter::visitWhileStmt(std::shared_ptr<WhileStmt> stmt) {
         execute(stmt->body);
     }
 }
+
+void Interpreter::visitFunctionStmt(std::shared_ptr<FunctionStmt> stmt) {
+    std::shared_ptr<LoxCallable> loxFunction = std::make_shared<LoxFunction>(stmt, environment);
+    environment->define(stmt->name.lexeme, loxFunction);
+}
+
+void Interpreter::visitReturnStmt(std::shared_ptr<ReturnStmt> stmt) {
+    std::any value = (stmt->expr == nullptr ? nullptr : evaluate(stmt->expr));
+    throw ReturnValue(value);
+}
+
 
