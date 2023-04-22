@@ -3,6 +3,7 @@
 #include "../lexer/token.hpp"
 
 struct BinaryExpr;
+struct LogicalExpr;
 struct UnaryExpr;
 struct LiteralExpr;
 struct GroupingExpr;
@@ -12,6 +13,7 @@ struct AssignmentExpr;
 // C++ does not support virtual template functions :)
 struct VisitorExpr {
     virtual void visitBinaryExpr(std::shared_ptr<BinaryExpr>) = 0;
+    virtual void visitLogicalExpr(std::shared_ptr<LogicalExpr>) = 0;
     virtual void visitUnaryExpr(std::shared_ptr<UnaryExpr>) = 0;
     virtual void visitLiteralExpr(std::shared_ptr<LiteralExpr>) = 0;
     virtual void visitGroupingExpr(std::shared_ptr<GroupingExpr>) = 0;
@@ -32,6 +34,18 @@ struct BinaryExpr : public std::enable_shared_from_this<BinaryExpr>, Expr {
 
     virtual void accept(VisitorExpr &visitor) override {
         visitor.visitBinaryExpr(shared_from_this());
+    };
+};
+
+struct LogicalExpr : public std::enable_shared_from_this<LogicalExpr>, Expr {
+    std::shared_ptr<Expr> lhs;
+    Token op;
+    std::shared_ptr<Expr> rhs;
+
+    LogicalExpr(std::shared_ptr<Expr> lhs, Token op, std::shared_ptr<Expr> rhs) : lhs(lhs), op(op), rhs(rhs) {}
+
+    virtual void accept(VisitorExpr &visitor) override {
+        visitor.visitLogicalExpr(shared_from_this());
     };
 };
 
@@ -91,6 +105,8 @@ struct ExpressionStmt;
 struct PrintStmt;
 struct VarStmt;
 struct BlockStmt;
+struct IfStmt;
+struct WhileStmt;
 
 // C++ does not support virtual template functions :)
 struct VisitorStmt {
@@ -98,6 +114,8 @@ struct VisitorStmt {
     virtual void visitPrintStmt(std::shared_ptr<PrintStmt>) = 0;
     virtual void visitVarStmt(std::shared_ptr<VarStmt>) = 0;
     virtual void visitBlockStmt(std::shared_ptr<BlockStmt>) = 0;
+    virtual void visitIfStmt(std::shared_ptr<IfStmt>) = 0;
+    virtual void visitWhileStmt(std::shared_ptr<WhileStmt>) = 0;
 };
 
 struct Stmt {
@@ -142,6 +160,29 @@ struct BlockStmt : public std::enable_shared_from_this<BlockStmt>, Stmt {
 
     virtual void accept(VisitorStmt &visitor) override {
         visitor.visitBlockStmt(shared_from_this());
+    };
+};
+
+struct IfStmt : public std::enable_shared_from_this<IfStmt>, Stmt {
+    std::shared_ptr<Expr> guard;
+    std::shared_ptr<Stmt> then;
+    std::shared_ptr<Stmt> elsee;
+
+    IfStmt(std::shared_ptr<Expr> guard, std::shared_ptr<Stmt> then, std::shared_ptr<Stmt> elsee) : guard(guard), then(then), elsee(elsee) {}
+
+    virtual void accept(VisitorStmt &visitor) override {
+        visitor.visitIfStmt(shared_from_this());
+    };
+};
+
+struct WhileStmt : public std::enable_shared_from_this<WhileStmt>, Stmt {
+    std::shared_ptr<Expr> cond;
+    std::shared_ptr<Stmt> body;
+
+    WhileStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body) : cond(cond), body(body) {}
+
+    virtual void accept(VisitorStmt &visitor) override {
+        visitor.visitWhileStmt(shared_from_this());
     };
 };
 

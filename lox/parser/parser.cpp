@@ -66,14 +66,34 @@ std::shared_ptr<Expr> Parser::expression() {
 }
 
 std::shared_ptr<Expr> Parser::assignment() {
-    auto lhs = equality();
+    auto lhs = logic_or();
     if (match({TokenType::EQUAL})) {
         auto op = previous();
-        auto rhs = assignment(); 
+        auto rhs = logic_or(); 
         if (dynamic_cast<VariableExpr*>(lhs.get()) != nullptr) {
             return std::make_shared<AssignmentExpr>(dynamic_cast<VariableExpr*>(lhs.get())->name, rhs);
         }
         throw error(op, "Invalid assignment target.");
+    }
+    return lhs;
+}
+
+std::shared_ptr<Expr> Parser::logic_or() {
+    auto lhs = logic_and();
+    if (match({TokenType::OR})) {
+        auto op = previous();
+        auto rhs = logic_and(); 
+        lhs = std::make_shared<LogicalExpr>(lhs, op, rhs);
+    }
+    return lhs;
+}
+
+std::shared_ptr<Expr> Parser::logic_and() {
+    auto lhs = equality();
+    if (match({TokenType::AND})) {
+        auto op = previous();
+        auto rhs = equality(); 
+        lhs = std::make_shared<LogicalExpr>(lhs, op, rhs);
     }
     return lhs;
 }
@@ -183,6 +203,9 @@ std::shared_ptr<Stmt> Parser::declaration() {
 std::shared_ptr<Stmt> Parser::statement() {
     if (match({TokenType::PRINT})) return print();
     if (match({TokenType::LEFT_BRACE})) return std::make_shared<BlockStmt>(block());
+    if (match({TokenType::IF})) return ifStmt();
+    if (match({TokenType::WHILE})) return whileStmt();
+    if (match({TokenType::FOR})) return forStmt();
     return expressionStmt();
 }
 
@@ -196,6 +219,70 @@ std::shared_ptr<Stmt> Parser::expressionStmt() {
     auto e = expression();
     consume(TokenType::SEMICOLON, "Expected ';' after expression.");
     return std::make_shared<ExpressionStmt>(e);
+}
+
+std::shared_ptr<Stmt> Parser::ifStmt() {
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'if'.");
+    auto guard = expression();
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after condition.");
+
+    auto then = statement();
+    std::shared_ptr<Stmt> elsee = nullptr;
+    if (match({TokenType::ELSE})) {
+        elsee = statement();
+    }
+
+    return std::make_shared<IfStmt>(guard, then, elsee);
+}
+
+std::shared_ptr<Stmt> Parser::whileStmt() {
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'while'.");
+    auto cond = expression();
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after condition.");
+    auto body = statement();
+
+    return std::make_shared<WhileStmt>(cond, body);
+}
+
+std::shared_ptr<Stmt> Parser::forStmt() {
+    consume(TokenType::LEFT_PAREN, "Expected '(' after 'for'.");
+
+    std::shared_ptr<Stmt> initializer;
+    if (match({TokenType::SEMICOLON})) {
+        initializer = nullptr;
+    } else if (match({TokenType::VAR})) {
+        initializer = var();
+    } else {
+        initializer = expressionStmt();
+    }
+
+    std::shared_ptr<Expr> condition;
+    if (check({TokenType::SEMICOLON})) {
+        condition = std::make_shared<LiteralExpr>(true);
+    } else {
+        condition = expression();
+    }
+    consume(TokenType::SEMICOLON, "Expected ';' after loop condition.");
+
+    std::shared_ptr<Expr> increment;
+    if (check({TokenType::RIGHT_PAREN})) {
+        increment = std::make_shared<LiteralExpr>(1);
+    } else {
+        increment = expression();
+    }
+    consume(TokenType::RIGHT_PAREN, "Expected ')' after loop clauses.");
+
+    std::shared_ptr<Stmt> body = statement();
+
+    return
+    std::make_shared<BlockStmt>(std::vector<std::shared_ptr<Stmt>>{
+        initializer,
+        std::make_shared<WhileStmt>(condition, 
+            std::make_shared<BlockStmt>(std::vector<std::shared_ptr<Stmt>>{
+                body,
+                std::make_shared<ExpressionStmt>(increment)
+            }))
+    });
 }
 
 std::vector<std::shared_ptr<Stmt>> Parser::block() {

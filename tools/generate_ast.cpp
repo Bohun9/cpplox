@@ -103,6 +103,7 @@ int main() {
 
     defineAst("Expr", {
         "Binary     : std::shared_ptr<Expr> lhs, Token op, std::shared_ptr<Expr> rhs",
+        "Logical    : std::shared_ptr<Expr> lhs, Token op, std::shared_ptr<Expr> rhs",
         "Unary      : Token op, std::shared_ptr<Expr> expr",
         "Literal    : std::any value",
         "Grouping   : std::shared_ptr<Expr> expr",
@@ -114,7 +115,9 @@ int main() {
         "Expression : std::shared_ptr<Expr> expr",
         "Print      : std::shared_ptr<Expr> expr",
         "Var        : Token name, std::shared_ptr<Expr> initializer",
-        "Block      : std::vector<Stmt> statements"
+        "Block      : std::vector<std::shared_ptr<Stmt>> statements",
+        "If         : std::shared_ptr<Expr> guard, std::shared_ptr<Stmt> then, std::shared_ptr<Stmt> elsee",
+        "While      : std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body"
     });
 
     return 0;

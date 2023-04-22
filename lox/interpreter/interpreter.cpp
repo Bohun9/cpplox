@@ -134,6 +134,25 @@ void Interpreter::visitBinaryExpr(std::shared_ptr<BinaryExpr> e) {
     };
 }
 
+void Interpreter::visitLogicalExpr(std::shared_ptr<LogicalExpr> e) {
+    auto lhs = evaluate(e->lhs);
+
+    if (e->op.type == TokenType::OR) {
+        if (isTruthy(lhs)) {
+            Return(lhs);
+            return;
+        }
+    } else {
+        if (!isTruthy(lhs)) {
+            Return(lhs);
+            return;
+        }
+    }
+
+    auto rhs = evaluate(e->rhs);
+    Return(rhs);
+}
+
 void Interpreter::visitUnaryExpr(std::shared_ptr<UnaryExpr> expr) {
     auto v = evaluate(expr->expr);
 
@@ -209,6 +228,20 @@ void Interpreter::visitBlockStmt(std::shared_ptr<BlockStmt> stmt) {
 
     for (auto statement : stmt->statements) {
         execute(statement);
+    }
+}
+
+void Interpreter::visitIfStmt(std::shared_ptr<IfStmt> stmt) {
+    if (isTruthy(evaluate(stmt->guard))) {
+        execute(stmt->then);
+    } else if (stmt->elsee != nullptr) {
+        execute(stmt->elsee);
+    }
+}
+
+void Interpreter::visitWhileStmt(std::shared_ptr<WhileStmt> stmt) {
+    while (isTruthy(evaluate(stmt->cond))) {
+        execute(stmt->body);
     }
 }
 

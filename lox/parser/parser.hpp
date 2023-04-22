@@ -21,6 +21,8 @@ private:
     // grammar functions
     std::shared_ptr<Expr> expression();
     std::shared_ptr<Expr> assignment();
+    std::shared_ptr<Expr> logic_or();
+    std::shared_ptr<Expr> logic_and();
     std::shared_ptr<Expr> equality();
     std::shared_ptr<Expr> comparison();
     std::shared_ptr<Expr> addition();
@@ -33,6 +35,9 @@ private:
     std::shared_ptr<Stmt> print();
     std::shared_ptr<Stmt> var();
     std::shared_ptr<Stmt> expressionStmt();
+    std::shared_ptr<Stmt> ifStmt();
+    std::shared_ptr<Stmt> whileStmt();
+    std::shared_ptr<Stmt> forStmt();
     std::vector<std::shared_ptr<Stmt>> block();
 
     Token advance();

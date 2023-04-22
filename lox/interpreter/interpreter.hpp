@@ -23,6 +23,7 @@ struct Interpreter : VisitorExpr, VisitorStmt {
     void visitLiteralExpr(std::shared_ptr<LiteralExpr> expr) override;
     void visitGroupingExpr(std::shared_ptr<GroupingExpr> expr) override;
     void visitBinaryExpr(std::shared_ptr<BinaryExpr> expr) override;
+    void visitLogicalExpr(std::shared_ptr<LogicalExpr> expr) override;
     void visitUnaryExpr(std::shared_ptr<UnaryExpr> expr) override;
     void visitVariableExpr(std::shared_ptr<VariableExpr> expr) override;
     void visitAssignmentExpr(std::shared_ptr<AssignmentExpr> expr) override;
@@ -31,6 +32,8 @@ struct Interpreter : VisitorExpr, VisitorStmt {
     void visitPrintStmt(std::shared_ptr<PrintStmt> expr) override;
     void visitVarStmt(std::shared_ptr<VarStmt> expr) override;
     void visitBlockStmt(std::shared_ptr<BlockStmt>) override;
+    void visitIfStmt(std::shared_ptr<IfStmt>) override;
+    void visitWhileStmt(std::shared_ptr<WhileStmt>) override;
 
     void checkNumberOperand(Token token, std::any v);
     void checkNumberOperands(Token token, std::any lhs, std::any rhs);
