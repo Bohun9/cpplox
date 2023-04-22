@@ -249,7 +249,7 @@ std::shared_ptr<Stmt> Parser::forStmt() {
 
     std::shared_ptr<Stmt> initializer;
     if (match({TokenType::SEMICOLON})) {
-        initializer = nullptr;
+        initializer = std::make_shared<ExpressionStmt>(std::make_shared<LiteralExpr>(1));
     } else if (match({TokenType::VAR})) {
         initializer = var();
     } else {
