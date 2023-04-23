@@ -1,0 +1,7 @@
+print 1 + 2 * 3; // out: 7
+
+print "hello" + " " + "world"; // out: hello world
+
+print true and !false; // out: true
+
+print nil; // out: nil

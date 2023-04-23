@@ -1,7 +1,0 @@
-var a = "global";
-{
-    fun p() { print a; }
-    p();
-    var a = "local";
-    p();
-}

@@ -1,7 +1,0 @@
-fun f(name, age) {
-    print name + " is " + age + " years old.";
-}
-
-
-f("Alice", "10");
-f("Bob", "11");

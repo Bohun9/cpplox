@@ -62,7 +62,7 @@ std::string Interpreter::stringify(std::any v) {
             return std::to_string(d);
         }
     } else if (v.type() == typeid(bool)) {
-        return std::to_string(std::any_cast<bool>(v));
+        return std::any_cast<bool>(v) == true ? "true" : "false";
     } else if (v.type() == typeid(std::string)) {
         return std::any_cast<std::string>(v);
     } else if (v.type() == typeid(std::nullptr_t)) {

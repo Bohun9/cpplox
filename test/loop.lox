@@ -1,0 +1,12 @@
+var s = 0;
+var i = 0;
+while (i != 4) {
+    s = s + i;
+    i = i + 1;
+}
+print s; // out: 6
+
+s = 0;
+for (var i = 0; i != 4; i = i + 1) s = s + i;
+print s; // out: 6
+

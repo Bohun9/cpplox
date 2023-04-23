@@ -1,0 +1,22 @@
+fun add(x) {
+    fun f(y) {
+        return x + y;
+    }
+    return f;
+}
+
+print add(1)(2); // out: 3
+print add(2)(2); // out: 4
+
+fun isEven(n) {
+    if (n == 0) return true;
+    return isOdd(n - 1);
+}
+
+fun isOdd(n) {
+    if (n == 0) return false;
+    return isEven(n - 1);
+}
+
+print isEven(6); // out: true
+print isOdd(8); // out: false

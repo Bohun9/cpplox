@@ -67,7 +67,7 @@ std::shared_ptr<Expr> Parser::expression() {
 
 std::shared_ptr<Expr> Parser::assignment() {
     auto lhs = logic_or();
-    if (match({TokenType::EQUAL})) {
+    while (match({TokenType::EQUAL})) {
         auto op = previous();
         auto rhs = logic_or(); 
         if (dynamic_cast<VariableExpr*>(lhs.get()) != nullptr) {
@@ -80,7 +80,7 @@ std::shared_ptr<Expr> Parser::assignment() {
 
 std::shared_ptr<Expr> Parser::logic_or() {
     auto lhs = logic_and();
-    if (match({TokenType::OR})) {
+    while (match({TokenType::OR})) {
         auto op = previous();
         auto rhs = logic_and(); 
         lhs = std::make_shared<LogicalExpr>(lhs, op, rhs);
@@ -90,7 +90,7 @@ std::shared_ptr<Expr> Parser::logic_or() {
 
 std::shared_ptr<Expr> Parser::logic_and() {
     auto lhs = equality();
-    if (match({TokenType::AND})) {
+    while (match({TokenType::AND})) {
         auto op = previous();
         auto rhs = equality(); 
         lhs = std::make_shared<LogicalExpr>(lhs, op, rhs);

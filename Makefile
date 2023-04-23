@@ -35,6 +35,9 @@ HEADERS := \
              lox/interpreter/objects.hpp \
              lox/analysis/resolver.hpp
 
+check: $(BUILD_DIR)/lox
+	python3 tools/test.py
+
 $(BUILD_DIR)/lox: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
