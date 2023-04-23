@@ -2,6 +2,11 @@ import glob
 import re
 import subprocess
 
+
+def csi(s, n):
+    return f"\033[{n}m{s}\033[0m"
+
+
 for file in glob.glob("test/*.lox"):
     with open(file, "r") as stream:
         source = stream.read()
@@ -17,12 +22,12 @@ for file in glob.glob("test/*.lox"):
 
         print(f"### {file}: ", end="")
         if expected_stdout != result.stdout or expected_stderr != result.stderr:
-            print("\033[1m\033[31mWA\033[m\033[0m")
+            print(csi(csi("WA", 31), 1))
 
             def pretty_print(header, o, e):
-                print(f"\033[4m{header}:\033[0m")
+                print(csi(f"{header}:", 4))
                 print(o, end="")
-                print("\033[4mexpected:\033[0m")
+                print(csi("expected:", 4))
                 print(e, end="")
 
             if expected_stdout != result.stdout:
@@ -30,4 +35,4 @@ for file in glob.glob("test/*.lox"):
             if expected_stderr != result.stderr:
                 pretty_print("standard error", result.stderr, expected_stderr)
         else:
-            print("\033[1m\033[32mOK\033[m\033[0m")
+            print(csi(csi("OK", 32), 1))
