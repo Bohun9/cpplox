@@ -11,7 +11,10 @@ struct Environment {
     Environment();
     Environment(std::shared_ptr<Environment> enclosing);
 
+    Environment *ancestor(int numHops);
     void define(std::string name, std::any value);
     void update(Token name, std::any value);
+    void updateAt(int numHops, Token name, std::any value);
     std::any get(Token name);
+    std::any getAt(int numHops, Token name);
 };

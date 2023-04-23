@@ -193,12 +193,20 @@ void Interpreter::visitUnaryExpr(std::shared_ptr<UnaryExpr> expr) {
 }
 
 void Interpreter::visitVariableExpr(std::shared_ptr<VariableExpr> expr) {
-    Return(environment->get(expr->name));
+    if (locals.count(expr)) {
+        Return(environment->getAt(locals[expr], expr->name));
+    } else {
+        Return(globals->get(expr->name));
+    }
 }
 
 void Interpreter::visitAssignmentExpr(std::shared_ptr<AssignmentExpr> expr) {
     std::any v = evaluate(expr->expr);
-    environment->update(expr->name, v);
+    if (locals.count(expr)) {
+        environment->updateAt(locals[expr], expr->name, v);
+    } else {
+        globals->update(expr->name, v);
+    }
     Return(v);
 }
 
@@ -281,6 +289,11 @@ void Interpreter::executeBlock(std::vector<std::shared_ptr<Stmt>> statements, st
     for (auto statement : statements) {
         execute(statement);
     }
+}
+
+void Interpreter::resolve(std::shared_ptr<Expr> expr, int numHops) {
+    assert(!locals.count(expr));
+    locals[expr] = numHops;
 }
 
 void Interpreter::visitIfStmt(std::shared_ptr<IfStmt> stmt) {

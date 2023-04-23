@@ -5,6 +5,7 @@
 #include "parser/parser.hpp"
 #include "ast/ast_printer.hpp"
 #include "interpreter/interpreter.hpp"
+#include "analysis/resolver.hpp"
 
 void run(std::string source, ErrorHandler &errorHandler, Interpreter &interpreter) {
     Scanner scanner(source, errorHandler);
@@ -13,9 +14,12 @@ void run(std::string source, ErrorHandler &errorHandler, Interpreter &interprete
     if (errorHandler.hadError) return;
 
     Parser parser(tokens, errorHandler);
-    auto ast = parser.parse();
+    std::vector<std::shared_ptr<Stmt>> ast = parser.parse();
 
     if (errorHandler.hadError) return;
+
+    Resolver resolver(interpreter, errorHandler);
+    resolver.resolve(ast);
 
     interpreter.interpret(ast);
 }

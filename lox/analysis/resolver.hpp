@@ -1,28 +1,24 @@
-#pragma once
-
-#include <bits/stdc++.h>
-
-#include "environment.hpp"
 #include "../ast/ast.hpp"
+#include "../interpreter/interpreter.hpp"
 #include "../error/error_handler.hpp"
 
-struct Interpreter : VisitorExpr, VisitorStmt {
-    std::shared_ptr<Environment> globals;
-    std::shared_ptr<Environment> environment;
-    std::map<std::shared_ptr<Expr>, int> locals;
+struct Resolver : VisitorExpr, VisitorStmt {
+    Interpreter &interpreter;
     ErrorHandler &errorHandler;
-    std::vector<std::any> stack;
+    std::vector<std::shared_ptr<std::map<std::string, bool>>> scopes;
 
-    Interpreter(ErrorHandler &errorHandler);
+    Resolver(Interpreter &interpreter, ErrorHandler &errorHandler);
 
-    void interpret(std::vector<std::shared_ptr<Stmt>> statements);
-    std::any evaluate(std::shared_ptr<Expr> expr);
-    void execute(std::shared_ptr<Stmt> expr);
-    void executeBlock(std::vector<std::shared_ptr<Stmt>> statements, std::shared_ptr<Environment> newEnvironment);
-    void resolve(std::shared_ptr<Expr> expr, int numHops);
+    void resolve(std::shared_ptr<Expr> expr);
+    void resolve(std::shared_ptr<Stmt> stmt);
+    void resolve(std::vector<std::shared_ptr<Stmt>> stmts);
+    void resolveLocal(std::shared_ptr<Expr> expr, Token name);
 
-    void Return(std::any v);
-    std::string stringify(std::any v);
+    void declare(Token token);
+    void define(Token token);
+
+    void beginScope();
+    void endScope();
 
     void visitLiteralExpr(std::shared_ptr<LiteralExpr> expr) override;
     void visitGroupingExpr(std::shared_ptr<GroupingExpr> expr) override;
@@ -41,12 +37,4 @@ struct Interpreter : VisitorExpr, VisitorStmt {
     void visitWhileStmt(std::shared_ptr<WhileStmt>) override;
     void visitFunctionStmt(std::shared_ptr<FunctionStmt>) override;
     void visitReturnStmt(std::shared_ptr<ReturnStmt>) override;
-
-    void checkNumberOperand(Token token, std::any v);
-    void checkNumberOperands(Token token, std::any lhs, std::any rhs);
-    void checkBooleanOperands(Token op, std::any lhs, std::any rhs);
-
-    bool isEqual(std::any lhs, std::any rhs);
-    bool isTruthy(std::any v);
 };
-
