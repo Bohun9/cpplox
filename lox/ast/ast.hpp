@@ -123,6 +123,8 @@ struct IfStmt;
 struct WhileStmt;
 struct FunctionStmt;
 struct ReturnStmt;
+struct BreakStmt;
+struct ContinueStmt;
 
 // C++ does not support virtual template functions :)
 struct VisitorStmt {
@@ -134,6 +136,8 @@ struct VisitorStmt {
     virtual void visitWhileStmt(std::shared_ptr<WhileStmt>) = 0;
     virtual void visitFunctionStmt(std::shared_ptr<FunctionStmt>) = 0;
     virtual void visitReturnStmt(std::shared_ptr<ReturnStmt>) = 0;
+    virtual void visitBreakStmt(std::shared_ptr<BreakStmt>) = 0;
+    virtual void visitContinueStmt(std::shared_ptr<ContinueStmt>) = 0;
 };
 
 struct Stmt {
@@ -196,8 +200,9 @@ struct IfStmt : public std::enable_shared_from_this<IfStmt>, Stmt {
 struct WhileStmt : public std::enable_shared_from_this<WhileStmt>, Stmt {
     std::shared_ptr<Expr> cond;
     std::shared_ptr<Stmt> body;
+    bool isDesugaredFor;
 
-    WhileStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body) : cond(cond), body(body) {}
+    WhileStmt(std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body, bool isDesugaredFor) : cond(cond), body(body), isDesugaredFor(isDesugaredFor) {}
 
     virtual void accept(VisitorStmt &visitor) override {
         visitor.visitWhileStmt(shared_from_this());
@@ -224,6 +229,26 @@ struct ReturnStmt : public std::enable_shared_from_this<ReturnStmt>, Stmt {
 
     virtual void accept(VisitorStmt &visitor) override {
         visitor.visitReturnStmt(shared_from_this());
+    };
+};
+
+struct BreakStmt : public std::enable_shared_from_this<BreakStmt>, Stmt {
+    Token keyword;
+
+    BreakStmt(Token keyword) : keyword(keyword) {}
+
+    virtual void accept(VisitorStmt &visitor) override {
+        visitor.visitBreakStmt(shared_from_this());
+    };
+};
+
+struct ContinueStmt : public std::enable_shared_from_this<ContinueStmt>, Stmt {
+    Token keyword;
+
+    ContinueStmt(Token keyword) : keyword(keyword) {}
+
+    virtual void accept(VisitorStmt &visitor) override {
+        visitor.visitContinueStmt(shared_from_this());
     };
 };
 

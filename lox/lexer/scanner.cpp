@@ -19,6 +19,8 @@ Scanner::Scanner(std::string &source, ErrorHandler &errorHandler) :
     keywords["true"]   = TokenType::TRUE;
     keywords["var"]    = TokenType::VAR;
     keywords["while"]  = TokenType::WHILE;
+    keywords["break"]  = TokenType::BREAK;
+    keywords["continue"]  = TokenType::CONTINUE;
 }
 
 std::vector<Token> Scanner::scanTokens() {

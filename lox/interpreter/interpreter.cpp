@@ -28,7 +28,13 @@ void Interpreter::interpret(std::vector<std::shared_ptr<Stmt>> statements) {
         }
     } catch (RunTimeError &e) {
         errorHandler.error(e);
-    }
+    } catch (ReturnValue &v) {
+        errorHandler.error(v.keyword, "Return statement at the top level.");
+    } catch (BreakLoop &b) {
+        errorHandler.error(b.keyword, "Break statement at the top level.");
+    } catch (ContinueLoop &c) {
+        errorHandler.error(c.keyword, "Continue statement at the top level.");
+    } 
 }
 
 std::any Interpreter::evaluate(std::shared_ptr<Expr> e) {
@@ -254,6 +260,14 @@ bool Interpreter::isTruthy(std::any v) {
     return true;
 }
 
+void Interpreter::visitBreakStmt(std::shared_ptr<BreakStmt> expr) {
+    throw BreakLoop(expr->keyword);
+}
+
+void Interpreter::visitContinueStmt(std::shared_ptr<ContinueStmt> expr) {
+    throw ContinueLoop(expr->keyword);
+}
+
 void Interpreter::visitExpressionStmt(std::shared_ptr<ExpressionStmt> s) {
     evaluate(s->expr);
 }
@@ -306,7 +320,20 @@ void Interpreter::visitIfStmt(std::shared_ptr<IfStmt> stmt) {
 
 void Interpreter::visitWhileStmt(std::shared_ptr<WhileStmt> stmt) {
     while (isTruthy(evaluate(stmt->cond))) {
-        execute(stmt->body);
+        try {
+            execute(stmt->body);
+        } catch (BreakLoop &b) {
+            break;
+        } catch (ContinueLoop &c) {
+            if (stmt->isDesugaredFor) {
+                std::shared_ptr<BlockStmt> body = std::dynamic_pointer_cast<BlockStmt>(stmt->body); 
+                assert(body != nullptr);
+                assert(body->statements.size() == 2);
+                // Wrap into block because of lexical name resolution.
+                execute(std::make_shared<BlockStmt>(std::vector<std::shared_ptr<Stmt>>{body->statements[1]}));
+            }
+            continue;
+        }
     }
 }
 
@@ -317,7 +344,7 @@ void Interpreter::visitFunctionStmt(std::shared_ptr<FunctionStmt> stmt) {
 
 void Interpreter::visitReturnStmt(std::shared_ptr<ReturnStmt> stmt) {
     std::any value = (stmt->expr == nullptr ? nullptr : evaluate(stmt->expr));
-    throw ReturnValue(value);
+    throw ReturnValue(stmt->keyword, value);
 }
 
 

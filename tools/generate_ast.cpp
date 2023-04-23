@@ -118,9 +118,11 @@ int main() {
         "Var        : Token name, std::shared_ptr<Expr> initializer",
         "Block      : std::vector<std::shared_ptr<Stmt>> statements",
         "If         : std::shared_ptr<Expr> guard, std::shared_ptr<Stmt> then, std::shared_ptr<Stmt> elsee",
-        "While      : std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body",
+        "While      : std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body, bool isDesugaredFor",
         "Function   : Token name, std::vector<Token> parameters, std::vector<std::shared_ptr<Stmt>> body",
-        "Return     : Token keyword, std::shared_ptr<Expr> expr"
+        "Return     : Token keyword, std::shared_ptr<Expr> expr",
+        "Break      : Token keyword",
+        "Continue   : Token keyword"
     });
 
     return 0;

@@ -13,8 +13,21 @@ struct RunTimeError {
 };
 
 struct ReturnValue {
+    Token keyword;
     std::any value;
 
-    ReturnValue(std::any value) : value(value) {}
+    ReturnValue(Token keyword, std::any value) : keyword(keyword), value(value) {}
+};
+
+struct BreakLoop {
+    Token keyword;
+
+    BreakLoop(Token keyword) : keyword(keyword) {}
+};
+
+struct ContinueLoop {
+    Token keyword;
+
+    ContinueLoop(Token keyword) : keyword(keyword) {}
 };
 

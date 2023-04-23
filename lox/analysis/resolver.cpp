@@ -69,7 +69,8 @@ void Resolver::visitCallExpr(std::shared_ptr<CallExpr> expr) {
     }
 }
 
-
+void Resolver::visitBreakStmt(std::shared_ptr<BreakStmt> stmt) {}
+void Resolver::visitContinueStmt(std::shared_ptr<ContinueStmt> stmt) {}
 void Resolver::visitExpressionStmt(std::shared_ptr<ExpressionStmt> stmt) { resolve(stmt->expr); }
 void Resolver::visitPrintStmt(std::shared_ptr<PrintStmt> stmt) { resolve(stmt->expr); }
 
@@ -113,6 +114,8 @@ void Resolver::visitFunctionStmt(std::shared_ptr<FunctionStmt> stmt) {
 }
 
 void Resolver::visitReturnStmt(std::shared_ptr<ReturnStmt> stmt) {
-    resolve(stmt->expr);
+    if (stmt->expr != nullptr) {
+        resolve(stmt->expr);
+    }
 }
 

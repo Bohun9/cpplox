@@ -34,6 +34,8 @@ private:
 
     std::shared_ptr<Stmt> declaration();
     std::shared_ptr<Stmt> statement();
+    std::shared_ptr<Stmt> breakStmt();
+    std::shared_ptr<Stmt> continueStmt();
     std::shared_ptr<Stmt> print();
     std::shared_ptr<Stmt> var();
     std::shared_ptr<Stmt> expressionStmt();

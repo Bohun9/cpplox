@@ -231,7 +231,21 @@ std::shared_ptr<Stmt> Parser::statement() {
     if (match({TokenType::WHILE})) return whileStmt();
     if (match({TokenType::FOR})) return forStmt();
     if (match({TokenType::RETURN})) return returnStmt();
+    if (match({TokenType::BREAK})) return breakStmt();
+    if (match({TokenType::CONTINUE})) return continueStmt();
     return expressionStmt();
+}
+
+std::shared_ptr<Stmt> Parser::breakStmt() {
+    auto keyword = previous();
+    consume(TokenType::SEMICOLON, "Expected ';' after 'break' keyword.");
+    return std::make_shared<BreakStmt>(keyword);
+}
+
+std::shared_ptr<Stmt> Parser::continueStmt() {
+    auto keyword = previous();
+    consume(TokenType::SEMICOLON, "Expected ';' after 'continue' keyword.");
+    return std::make_shared<ContinueStmt>(keyword);
 }
 
 std::shared_ptr<Stmt> Parser::print() {
@@ -266,7 +280,7 @@ std::shared_ptr<Stmt> Parser::whileStmt() {
     consume(TokenType::RIGHT_PAREN, "Expected ')' after condition.");
     auto body = statement();
 
-    return std::make_shared<WhileStmt>(cond, body);
+    return std::make_shared<WhileStmt>(cond, body, false);
 }
 
 std::shared_ptr<Stmt> Parser::forStmt() {
@@ -305,8 +319,8 @@ std::shared_ptr<Stmt> Parser::forStmt() {
         std::make_shared<WhileStmt>(condition, 
             std::make_shared<BlockStmt>(std::vector<std::shared_ptr<Stmt>>{
                 body,
-                std::make_shared<ExpressionStmt>(increment)
-            }))
+                std::make_shared<ExpressionStmt>(increment),
+            }), true)
     });
 }
 
