@@ -26,6 +26,9 @@ void Resolver::endScope() {
 
 void Resolver::declare(Token name) {
     if (!scopes.empty()) {
+        if (scopes.back()->count(name.lexeme)) {
+            errorHandler.error(name, "Variable redefined in local scope.");
+        }
         (*scopes.back())[name.lexeme] = false;
     }
 }

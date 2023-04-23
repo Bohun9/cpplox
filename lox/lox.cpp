@@ -21,6 +21,8 @@ void run(std::string source, ErrorHandler &errorHandler, Interpreter &interprete
     Resolver resolver(interpreter, errorHandler);
     resolver.resolve(ast);
 
+    if (errorHandler.hadError) return;
+
     interpreter.interpret(ast);
 }
 
