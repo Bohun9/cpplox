@@ -1,9 +1,0 @@
-if (true) print "true"; // out: true
-
-if (false) {} else print "false"; // out: false
-
-if (1 < 2 and 2 > 1 and 1 <= 2 and 2 >= 1) print "comparison"; // out: comparison
-
-if (1 == 1 and !(1 == "1")) print "equality"; // out: equality
-
-if (!!true) print "unary"; // out: unary

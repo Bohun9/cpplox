@@ -1,7 +1,7 @@
 fun f() {
-    continue;
+    continue; // err: [line 2] Error continue: Continue statement at the function level.
 }
 
 for (var i = 0; i < 1; i = i + 1) {
-    f(); // err: [line 2] Error continue: Continue statement at the function level.
+    f();
 }
