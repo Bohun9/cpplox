@@ -231,7 +231,11 @@ void Interpreter::visitCallExpr(std::shared_ptr<CallExpr> expr) {
                 Return(callable->call(*this, arguments));
             } catch (ReturnValue &returnvalue) {
                 Return(returnvalue.value);
-            }
+            } catch (BreakLoop &b) {
+                throw RunTimeError(b.keyword, "Break statement at the function level.");
+            } catch (ContinueLoop &b) {
+                throw RunTimeError(b.keyword, "Continue statement at the function level.");
+            } 
         } else {
             throw RunTimeError(expr->paren, "Expected " + std::to_string(callable->arity()) + " parameters, but got " + std::to_string(arguments.size()) + "arguments.");
         }

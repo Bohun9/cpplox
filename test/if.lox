@@ -1,8 +1,6 @@
 if (true) print "true"; // out: true
-else 1;
 
-if (false) {}
-else print "false"; // out: false
+if (false) {} else print "false"; // out: false
 
 if (1 < 2 and 2 > 1 and 1 <= 2 and 2 >= 1) print "comparison"; // out: comparison
 

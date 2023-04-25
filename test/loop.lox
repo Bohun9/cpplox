@@ -7,6 +7,8 @@ while (i != 4) {
 print s; // out: 6
 
 s = 0;
-for (var i = 0; i != 4; i = i + 1) s = s + i;
+for (var i = 0; i != 4; i = i + 1) {
+    s = s + i;
+}
 print s; // out: 6
 

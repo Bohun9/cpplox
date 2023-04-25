@@ -1,0 +1,17 @@
+var x = 0;
+{
+    var x = 1;
+    print x; // out: 1
+}
+print x; // out: 0
+
+
+var y = 0;
+{
+    fun f() {
+        print y;
+    }
+    f(); // out: 0
+    var y = 1;
+    f(); // out: 0
+}

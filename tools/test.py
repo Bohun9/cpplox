@@ -7,7 +7,7 @@ def csi(s, n):
     return f"\033[{n}m{s}\033[0m"
 
 
-for file in glob.glob("test/*.lox"):
+for file in glob.glob("test/**/*.lox", recursive=True):
     with open(file, "r") as stream:
         source = stream.read()
 
