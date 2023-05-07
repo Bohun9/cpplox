@@ -28,6 +28,9 @@ struct Resolver : VisitorExpr, VisitorStmt {
     void visitVariableExpr(std::shared_ptr<VariableExpr> expr) override;
     void visitAssignmentExpr(std::shared_ptr<AssignmentExpr> expr) override;
     void visitCallExpr(std::shared_ptr<CallExpr> expr) override;
+    void visitGetExpr(std::shared_ptr<GetExpr> expr) override;
+    void visitSetExpr(std::shared_ptr<SetExpr> expr) override;
+    void visitThisExpr(std::shared_ptr<ThisExpr> expr) override;
 
     void visitBreakStmt(std::shared_ptr<BreakStmt> expr) override;
     void visitContinueStmt(std::shared_ptr<ContinueStmt> expr) override;
@@ -38,5 +41,6 @@ struct Resolver : VisitorExpr, VisitorStmt {
     void visitIfStmt(std::shared_ptr<IfStmt>) override;
     void visitWhileStmt(std::shared_ptr<WhileStmt>) override;
     void visitFunctionStmt(std::shared_ptr<FunctionStmt>) override;
+    void visitClassStmt(std::shared_ptr<ClassStmt>) override;
     void visitReturnStmt(std::shared_ptr<ReturnStmt>) override;
 };

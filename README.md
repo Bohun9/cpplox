@@ -1,6 +1,7 @@
 ### cpplox
 
-Interpreter for dynamic, imperative language.
+Interpreter for dynamic, imperative language with OOP support.
 
 ##### TODO:
-- classes
+- inheritance
+- CMake

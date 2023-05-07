@@ -43,6 +43,7 @@ private:
     std::shared_ptr<Stmt> whileStmt();
     std::shared_ptr<Stmt> forStmt();
     std::shared_ptr<Stmt> functionStmt(std::string kind);
+    std::shared_ptr<Stmt> classDeclaration();
     std::shared_ptr<Stmt> returnStmt();
     std::vector<std::shared_ptr<Stmt>> block();
 

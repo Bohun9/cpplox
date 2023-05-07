@@ -1,0 +1,14 @@
+class Person {
+    init(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+    whoAmI() {
+        print "I'm " + this.name + " and I'm " + this.age + " years old.";
+    }
+}
+
+var bob = Person("Bob", "20");
+bob.whoAmI(); // out: I'm Bob and I'm 20 years old.
+print Person; // out: <class Person>
+print bob; // out: <Person object>

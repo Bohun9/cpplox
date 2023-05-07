@@ -69,6 +69,8 @@ std::string Interpreter::stringify(std::any v) {
         return "nil";
     } else if (v.type() == typeid(std::shared_ptr<LoxCallable>)) {
         return std::any_cast<std::shared_ptr<LoxCallable>>(v)->toString();
+    } else if (v.type() == typeid(std::shared_ptr<LoxInstance>)) {
+        return std::any_cast<std::shared_ptr<LoxInstance>>(v)->toString();
     }
     assert(0);
 }
@@ -198,12 +200,21 @@ void Interpreter::visitUnaryExpr(std::shared_ptr<UnaryExpr> expr) {
     }
 }
 
-void Interpreter::visitVariableExpr(std::shared_ptr<VariableExpr> expr) {
+std::any Interpreter::lookUpVariable(std::shared_ptr<Expr> expr, Token name) {
     if (locals.count(expr)) {
-        Return(environment->getAt(locals[expr], expr->name));
+        return environment->getAt(locals[expr], name);
     } else {
-        Return(globals->get(expr->name));
+        return globals->get(name);
     }
+}
+
+void Interpreter::visitVariableExpr(std::shared_ptr<VariableExpr> expr) {
+    Return(lookUpVariable(expr, expr->name));
+    // if (locals.count(expr)) {
+    //     Return(environment->getAt(locals[expr], expr->name));
+    // } else {
+    //     Return(globals->get(expr->name));
+    // }
 }
 
 void Interpreter::visitAssignmentExpr(std::shared_ptr<AssignmentExpr> expr) {
@@ -242,6 +253,31 @@ void Interpreter::visitCallExpr(std::shared_ptr<CallExpr> expr) {
     } else {
         throw RunTimeError(expr->paren, "Can only call functions and classes.");
     }
+}
+
+void Interpreter::visitGetExpr(std::shared_ptr<GetExpr> expr) {
+    std::any object = evaluate(expr->object);
+    if (object.type() == typeid(std::shared_ptr<LoxInstance>)) {
+        Return(std::any_cast<std::shared_ptr<LoxInstance>>(object)->get(expr->name));
+        return;
+    }
+
+    throw RunTimeError(expr->name, "Only instances have properties.");
+}
+
+void Interpreter::visitSetExpr(std::shared_ptr<SetExpr> expr) {
+    std::any object = evaluate(expr->object);
+    if (object.type() != typeid(std::shared_ptr<LoxInstance>)) {
+        throw RunTimeError(expr->name, "Only instances have properties.");
+    }
+
+    std::any value = evaluate(expr->value);
+    std::any_cast<std::shared_ptr<LoxInstance>>(object)->update(expr->name, value);
+    Return(value);
+}
+
+void Interpreter::visitThisExpr(std::shared_ptr<ThisExpr> expr) {
+    Return(lookUpVariable(expr, expr->keyword));
 }
 
 bool Interpreter::isEqual(std::any lhs, std::any rhs) {
@@ -344,6 +380,16 @@ void Interpreter::visitWhileStmt(std::shared_ptr<WhileStmt> stmt) {
 void Interpreter::visitFunctionStmt(std::shared_ptr<FunctionStmt> stmt) {
     std::shared_ptr<LoxCallable> loxFunction = std::make_shared<LoxFunction>(stmt, environment);
     environment->define(stmt->name.lexeme, loxFunction);
+}
+
+void Interpreter::visitClassStmt(std::shared_ptr<ClassStmt> stmt) {
+    std::map<std::string, std::shared_ptr<LoxFunction>> methods;
+    for (auto method : stmt->methods) {
+        methods[method->name.lexeme] = std::make_shared<LoxFunction>(method, environment);
+    }
+
+    std::shared_ptr<LoxCallable> klass = std::make_shared<LoxClass>(stmt->name.lexeme, methods);
+    environment->define(stmt->name.lexeme, klass);
 }
 
 void Interpreter::visitReturnStmt(std::shared_ptr<ReturnStmt> stmt) {

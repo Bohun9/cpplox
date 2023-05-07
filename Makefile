@@ -13,17 +13,6 @@ OBJS := \
              $(BUILD_DIR)/environment.o \
              $(BUILD_DIR)/resolver.o \
 
-# SOURCE := \
-#              lox/lox.cpp \
-#              lox/error/error_handler.cpp \
-#              lox/lexer/scanner.cpp \
-#              lox/lexer/token.cpp \
-#              lox/parser/parser.cpp \
-#              lox/ast/ast_printer.cpp \
-#              lox/interpreter/interpreter.cpp \
-#              lox/interpreter/environment.cpp \
-#              lox/analysis/resolver.cpp \
-
 HEADERS := \
              lox/error/error_handler.hpp \
              lox/lexer/scanner.hpp \

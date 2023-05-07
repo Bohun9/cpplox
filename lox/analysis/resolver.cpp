@@ -72,6 +72,19 @@ void Resolver::visitCallExpr(std::shared_ptr<CallExpr> expr) {
     }
 }
 
+void Resolver::visitGetExpr(std::shared_ptr<GetExpr> expr) {
+    resolve(expr->object);
+}
+
+void Resolver::visitSetExpr(std::shared_ptr<SetExpr> expr) {
+    resolve(expr->object);
+    resolve(expr->value);
+}
+
+void Resolver::visitThisExpr(std::shared_ptr<ThisExpr> expr) {
+    resolveLocal(expr, expr->keyword);
+}
+
 void Resolver::visitBreakStmt(std::shared_ptr<BreakStmt> stmt) {}
 void Resolver::visitContinueStmt(std::shared_ptr<ContinueStmt> stmt) {}
 void Resolver::visitExpressionStmt(std::shared_ptr<ExpressionStmt> stmt) { resolve(stmt->expr); }
@@ -113,6 +126,18 @@ void Resolver::visitFunctionStmt(std::shared_ptr<FunctionStmt> stmt) {
         define(parameter);
     }
     resolve(stmt->body);
+    endScope();
+}
+
+void Resolver::visitClassStmt(std::shared_ptr<ClassStmt> stmt) {
+    declare(stmt->name);
+    define(stmt->name);
+
+    beginScope();
+    (*scopes.back())["this"] = true;
+    for (auto method : stmt->methods) {
+        resolve(method);
+    }
     endScope();
 }
 

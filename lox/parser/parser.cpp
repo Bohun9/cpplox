@@ -70,8 +70,10 @@ std::shared_ptr<Expr> Parser::assignment() {
     while (match({TokenType::EQUAL})) {
         auto op = previous();
         auto rhs = logic_or(); 
-        if (dynamic_cast<VariableExpr*>(lhs.get()) != nullptr) {
-            return std::make_shared<AssignmentExpr>(dynamic_cast<VariableExpr*>(lhs.get())->name, rhs);
+        if (auto var = std::dynamic_pointer_cast<VariableExpr>(lhs); var) {
+            return std::make_shared<AssignmentExpr>(var->name, rhs);
+        } else if (auto get = std::dynamic_pointer_cast<GetExpr>(lhs); get) {
+            return std::make_shared<SetExpr>(get->object, get->name, rhs);
         }
         throw error(op, "Invalid assignment target.");
     }
@@ -148,22 +150,27 @@ std::shared_ptr<Expr> Parser::unary() {
 
 std::shared_ptr<Expr> Parser::call() {
     auto callee = primary();
-    while (match({TokenType::LEFT_PAREN})) {
-        auto paren = previous();
-        std::vector<std::shared_ptr<Expr>> arguments;
+    while (true) {
+        if (match({TokenType::LEFT_PAREN})) {
+            auto paren = previous();
+            std::vector<std::shared_ptr<Expr>> arguments;
 
-        if (!check({TokenType::RIGHT_PAREN})) {
-            do {
-                arguments.push_back(expression());
-            } while (match({TokenType::COMMA}));
-        }
-        consume(TokenType::RIGHT_PAREN, "Expected ')' after arguments");
+            if (!check({TokenType::RIGHT_PAREN})) {
+                do {
+                    arguments.push_back(expression());
+                } while (match({TokenType::COMMA}));
+            }
+            consume(TokenType::RIGHT_PAREN, "Expected ')' after arguments");
 
-        if (arguments.size() > MAX_ARGUMENTS) {
-            error(previous(), "Can't have more that " + std::to_string(MAX_ARGUMENTS) + " arguments.");
-        }
+            if (arguments.size() > MAX_ARGUMENTS) {
+                error(previous(), "Can't have more that " + std::to_string(MAX_ARGUMENTS) + " arguments.");
+            }
 
-        callee = std::make_shared<CallExpr>(callee, paren, arguments);
+            callee = std::make_shared<CallExpr>(callee, paren, arguments);
+        } else if (match({TokenType::DOT})) {
+            Token name = consume(TokenType::IDENTIFIER, "Expected propety name after '.'.");
+            callee = std::make_shared<GetExpr>(callee, name);
+        } else break;
     }
     return callee;
 }
@@ -172,6 +179,7 @@ std::shared_ptr<Expr> Parser::primary() {
     if (match({TokenType::TRUE}))  return std::make_shared<LiteralExpr>(true);
     if (match({TokenType::FALSE})) return std::make_shared<LiteralExpr>(false);
     if (match({TokenType::NIL}))   return std::make_shared<LiteralExpr>(nullptr);
+    if (match({TokenType::THIS}))  return std::make_shared<ThisExpr>(previous());
 
     if (match({TokenType::IDENTIFIER})) {
         return std::make_shared<VariableExpr>(previous());
@@ -217,6 +225,7 @@ std::shared_ptr<Stmt> Parser::declaration() {
     try {
         if (match({TokenType::VAR})) return var();
         if (match({TokenType::FUN})) return functionStmt("function");
+        if (match({TokenType::CLASS})) return classDeclaration();
         return statement();
     } catch (ParseError &e) {
         synchronize();
@@ -365,6 +374,19 @@ std::shared_ptr<Stmt> Parser::functionStmt(std::string kind) {
     std::vector<std::shared_ptr<Stmt>> body = block();
 
     return std::make_shared<FunctionStmt>(name, parameters, body);
+}
+
+std::shared_ptr<Stmt> Parser::classDeclaration() {
+    Token name = consume(TokenType::IDENTIFIER, "Expected class name.");
+    consume(TokenType::LEFT_BRACE, "Expected '{' before class body.");
+
+    std::vector<std::shared_ptr<FunctionStmt>> methods;
+    while (!isAtEnd() && !check({TokenType::RIGHT_BRACE})) {
+        methods.push_back(std::dynamic_pointer_cast<FunctionStmt>(functionStmt("method")));
+    }
+
+    consume(TokenType::RIGHT_BRACE, "Expected '}' after class body.");
+    return std::make_shared<ClassStmt>(name, methods);
 }
 
 std::shared_ptr<Stmt> Parser::returnStmt() {
