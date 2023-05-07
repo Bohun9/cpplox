@@ -41,3 +41,11 @@ void Environment::updateAt(int numHops, Token name, std::any value) {
     ancestor(numHops)->update(name, value);
 }
 
+void Environment::show() {
+    std::cout << "Environment: ";
+    for (auto [k, v] : bindings) {
+        std::cout << k << " ";
+    }
+    std::cout << "\n";
+}
+

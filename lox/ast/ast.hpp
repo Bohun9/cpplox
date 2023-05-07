@@ -13,6 +13,7 @@ struct CallExpr;
 struct GetExpr;
 struct SetExpr;
 struct ThisExpr;
+struct SuperExpr;
 
 // C++ does not support virtual template functions :)
 struct VisitorExpr {
@@ -27,6 +28,7 @@ struct VisitorExpr {
     virtual void visitGetExpr(std::shared_ptr<GetExpr>) = 0;
     virtual void visitSetExpr(std::shared_ptr<SetExpr>) = 0;
     virtual void visitThisExpr(std::shared_ptr<ThisExpr>) = 0;
+    virtual void visitSuperExpr(std::shared_ptr<SuperExpr>) = 0;
 };
 
 struct Expr {
@@ -154,6 +156,17 @@ struct ThisExpr : public std::enable_shared_from_this<ThisExpr>, Expr {
     };
 };
 
+struct SuperExpr : public std::enable_shared_from_this<SuperExpr>, Expr {
+    Token keyword;
+    Token method;
+
+    SuperExpr(Token keyword, Token method) : keyword(keyword), method(method) {}
+
+    virtual void accept(VisitorExpr &visitor) override {
+        visitor.visitSuperExpr(shared_from_this());
+    };
+};
+
 struct ExpressionStmt;
 struct PrintStmt;
 struct VarStmt;
@@ -264,9 +277,10 @@ struct FunctionStmt : public std::enable_shared_from_this<FunctionStmt>, Stmt {
 
 struct ClassStmt : public std::enable_shared_from_this<ClassStmt>, Stmt {
     Token name;
+    std::shared_ptr<VariableExpr> superclass;
     std::vector<std::shared_ptr<FunctionStmt>> methods;
 
-    ClassStmt(Token name, std::vector<std::shared_ptr<FunctionStmt>> methods) : name(name), methods(methods) {}
+    ClassStmt(Token name, std::shared_ptr<VariableExpr> superclass, std::vector<std::shared_ptr<FunctionStmt>> methods) : name(name), superclass(superclass), methods(methods) {}
 
     virtual void accept(VisitorStmt &visitor) override {
         visitor.visitClassStmt(shared_from_this());

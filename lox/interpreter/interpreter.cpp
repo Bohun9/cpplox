@@ -71,6 +71,8 @@ std::string Interpreter::stringify(std::any v) {
         return std::any_cast<std::shared_ptr<LoxCallable>>(v)->toString();
     } else if (v.type() == typeid(std::shared_ptr<LoxInstance>)) {
         return std::any_cast<std::shared_ptr<LoxInstance>>(v)->toString();
+    } else if (v.type() == typeid(std::shared_ptr<LoxClass>)) {
+        return std::any_cast<std::shared_ptr<LoxClass>>(v)->toString();
     }
     assert(0);
 }
@@ -210,11 +212,6 @@ std::any Interpreter::lookUpVariable(std::shared_ptr<Expr> expr, Token name) {
 
 void Interpreter::visitVariableExpr(std::shared_ptr<VariableExpr> expr) {
     Return(lookUpVariable(expr, expr->name));
-    // if (locals.count(expr)) {
-    //     Return(environment->getAt(locals[expr], expr->name));
-    // } else {
-    //     Return(globals->get(expr->name));
-    // }
 }
 
 void Interpreter::visitAssignmentExpr(std::shared_ptr<AssignmentExpr> expr) {
@@ -233,6 +230,10 @@ void Interpreter::visitCallExpr(std::shared_ptr<CallExpr> expr) {
     std::vector<std::any> arguments;
     for (auto argument : expr->arguments) {
         arguments.push_back(evaluate(argument));
+    }
+
+    if (callee.type() == typeid(std::shared_ptr<LoxClass>)) { // consequence of not having Object class and using std::any
+        callee = std::static_pointer_cast<LoxCallable>(std::any_cast<std::shared_ptr<LoxClass>>(callee));
     }
 
     if (callee.type() == typeid(std::shared_ptr<LoxCallable>)) {
@@ -278,6 +279,21 @@ void Interpreter::visitSetExpr(std::shared_ptr<SetExpr> expr) {
 
 void Interpreter::visitThisExpr(std::shared_ptr<ThisExpr> expr) {
     Return(lookUpVariable(expr, expr->keyword));
+}
+
+void Interpreter::visitSuperExpr(std::shared_ptr<SuperExpr> expr) {
+    if (locals.count(expr)) {
+        std::shared_ptr<LoxClass> superclass = std::any_cast<std::shared_ptr<LoxClass>>(environment->getAt(locals[expr], expr->keyword));
+        std::shared_ptr<LoxInstance> object  = std::any_cast<std::shared_ptr<LoxInstance>>(environment->getAt(locals[expr] - 1, Token(TokenType::THIS, "this", 0, 0)));
+        if (std::shared_ptr<LoxFunction> method = superclass->findMethod(expr->method.lexeme); method) {
+            Return(std::static_pointer_cast<LoxCallable>(method->bind(object)));
+            return;
+        } else {
+            throw RunTimeError(expr->method, "Undefined property " + expr->method.lexeme + ".");
+        }
+    } else {
+        throw RunTimeError(expr->keyword, "'super' not in the subclass.");
+    }
 }
 
 bool Interpreter::isEqual(std::any lhs, std::any rhs) {
@@ -383,12 +399,30 @@ void Interpreter::visitFunctionStmt(std::shared_ptr<FunctionStmt> stmt) {
 }
 
 void Interpreter::visitClassStmt(std::shared_ptr<ClassStmt> stmt) {
+    std::shared_ptr<LoxClass> superclass = nullptr;
+    if (stmt->superclass) {
+        std::any super = evaluate(stmt->superclass);
+        if (super.type() != typeid(std::shared_ptr<LoxClass>)) {
+            throw RunTimeError(stmt->superclass->name, "Superclass must be a class.");
+        }
+        superclass = std::any_cast<std::shared_ptr<LoxClass>>(super);
+    }
+
+    if (stmt->superclass) {
+        environment = std::make_shared<Environment>(environment);
+        environment->define("super", superclass);
+    }
+
     std::map<std::string, std::shared_ptr<LoxFunction>> methods;
     for (auto method : stmt->methods) {
         methods[method->name.lexeme] = std::make_shared<LoxFunction>(method, environment);
     }
 
-    std::shared_ptr<LoxCallable> klass = std::make_shared<LoxClass>(stmt->name.lexeme, methods);
+    if (stmt->superclass) {
+        environment = environment->enclosing;
+    }
+
+    std::shared_ptr<LoxClass> klass = std::make_shared<LoxClass>(stmt->name.lexeme, superclass, methods);
     environment->define(stmt->name.lexeme, klass);
 }
 

@@ -112,7 +112,8 @@ int main() {
         "Call       : std::shared_ptr<Expr> callee, Token paren, std::vector<std::shared_ptr<Expr>> arguments",
         "Get        : std::shared_ptr<Expr> object, Token name",
         "Set        : std::shared_ptr<Expr> object, Token name, std::shared_ptr<Expr> value",
-        "This       : Token keyword"
+        "This       : Token keyword",
+        "Super      : Token keyword, Token method"
     });
 
     defineAst("Stmt", {
@@ -123,7 +124,7 @@ int main() {
         "If         : std::shared_ptr<Expr> guard, std::shared_ptr<Stmt> then, std::shared_ptr<Stmt> elsee",
         "While      : std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body, bool isDesugaredFor",
         "Function   : Token name, std::vector<Token> parameters, std::vector<std::shared_ptr<Stmt>> body",
-        "Class      : Token name, std::vector<std::shared_ptr<FunctionStmt>> methods",
+        "Class      : Token name, std::shared_ptr<VariableExpr> superclass, std::vector<std::shared_ptr<FunctionStmt>> methods",
         "Return     : Token keyword, std::shared_ptr<Expr> expr",
         "Break      : Token keyword",
         "Continue   : Token keyword"

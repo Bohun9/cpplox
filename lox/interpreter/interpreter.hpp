@@ -35,6 +35,7 @@ struct Interpreter : VisitorExpr, VisitorStmt {
     void visitGetExpr(std::shared_ptr<GetExpr> expr) override;
     void visitSetExpr(std::shared_ptr<SetExpr> expr) override;
     void visitThisExpr(std::shared_ptr<ThisExpr> expr) override;
+    void visitSuperExpr(std::shared_ptr<SuperExpr> expr) override;
 
     void visitBreakStmt(std::shared_ptr<BreakStmt> expr) override;
     void visitContinueStmt(std::shared_ptr<ContinueStmt> expr) override;

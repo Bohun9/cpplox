@@ -1,0 +1,19 @@
+class P {
+    init(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+    say() {
+        print this.name + " " + this.age + " " + this.job;
+    }
+}
+
+class I < P {
+    init(name, age, job) {
+        super.init(name, age);
+        this.job = job;
+    }
+}
+
+var alice = I("Alice", "12", "Networking");
+alice.say(); // out: Alice 12 Networking

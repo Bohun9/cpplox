@@ -85,6 +85,10 @@ void Resolver::visitThisExpr(std::shared_ptr<ThisExpr> expr) {
     resolveLocal(expr, expr->keyword);
 }
 
+void Resolver::visitSuperExpr(std::shared_ptr<SuperExpr> expr) {
+    resolveLocal(expr, expr->keyword);
+}
+
 void Resolver::visitBreakStmt(std::shared_ptr<BreakStmt> stmt) {}
 void Resolver::visitContinueStmt(std::shared_ptr<ContinueStmt> stmt) {}
 void Resolver::visitExpressionStmt(std::shared_ptr<ExpressionStmt> stmt) { resolve(stmt->expr); }
@@ -133,12 +137,29 @@ void Resolver::visitClassStmt(std::shared_ptr<ClassStmt> stmt) {
     declare(stmt->name);
     define(stmt->name);
 
+    if (stmt->superclass && stmt->name.lexeme == stmt->superclass->name.lexeme) {
+        errorHandler.error(stmt->superclass->name, "A class can't inherit from itself.");
+    }
+
+    if (stmt->superclass) {
+        resolve(stmt->superclass);
+    }
+
+    if (stmt->superclass) {
+        beginScope();
+        (*scopes.back())["super"] = true;
+    }
+
     beginScope();
     (*scopes.back())["this"] = true;
     for (auto method : stmt->methods) {
         resolve(method);
     }
     endScope();
+
+    if (stmt->superclass) {
+        endScope();
+    }
 }
 
 void Resolver::visitReturnStmt(std::shared_ptr<ReturnStmt> stmt) {

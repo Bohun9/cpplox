@@ -41,9 +41,10 @@ struct LoxFunction : LoxCallable {
 
 struct LoxClass : LoxCallable, public std::enable_shared_from_this<LoxClass> {
     std::string name;
+    std::shared_ptr<LoxClass> superclass;
     std::map<std::string, std::shared_ptr<LoxFunction>> methods;
 
-    LoxClass(std::string name, std::map<std::string, std::shared_ptr<LoxFunction>> methods) : name(name), methods(methods) {}
+    LoxClass(std::string name, std::shared_ptr<LoxClass> superclass, std::map<std::string, std::shared_ptr<LoxFunction>> methods) : name(name), superclass(superclass), methods(methods) {}
 
     std::any call(Interpreter &interpreter, std::vector<std::any> arguments) override {
         auto instance = std::make_shared<LoxInstance>(shared_from_this());
@@ -67,6 +68,9 @@ struct LoxClass : LoxCallable, public std::enable_shared_from_this<LoxClass> {
     std::shared_ptr<LoxFunction> findMethod(std::string name) {
         if (methods.count(name)) {
             return methods[name];
+        }
+        if (superclass) {
+            return superclass->findMethod(name);
         }
         return nullptr;
     }
