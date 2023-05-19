@@ -5,8 +5,6 @@
 #include "../error/error_handler.hpp"
 #include "../error/exceptions.hpp"
 
-struct ParseError;
-
 struct Parser {
 private:
     int current;

@@ -17,7 +17,7 @@ void Resolver::resolve(std::vector<std::shared_ptr<Stmt>> stmts) {
 }
 
 void Resolver::beginScope() {
-    scopes.push_back(std::make_shared<std::map<std::string, bool>>());
+    scopes.push_back(std::map<std::string, bool>());
 }
 
 void Resolver::endScope() {
@@ -26,22 +26,22 @@ void Resolver::endScope() {
 
 void Resolver::declare(Token name) {
     if (!scopes.empty()) {
-        if (scopes.back()->count(name.lexeme)) {
+        if (scopes.back().count(name.lexeme)) {
             errorHandler.error(name, "Variable redefined in local scope.");
         }
-        (*scopes.back())[name.lexeme] = false;
+        scopes.back()[name.lexeme] = false;
     }
 }
 
 void Resolver::define(Token name) {
     if (!scopes.empty()) {
-        (*scopes.back())[name.lexeme] = true;
+        scopes.back()[name.lexeme] = true;
     }
 }
 
 void Resolver::resolveLocal(std::shared_ptr<Expr> expr, Token name) {
     for (int i = 0; i < int(scopes.size()); i++) {
-        if (scopes[scopes.size() - 1 - i]->count(name.lexeme)) {
+        if (scopes[scopes.size() - 1 - i].count(name.lexeme)) {
             interpreter.resolve(expr, i);
         }
     }
@@ -54,7 +54,7 @@ void Resolver::visitLogicalExpr(std::shared_ptr<LogicalExpr> expr) { resolve(exp
 void Resolver::visitUnaryExpr(std::shared_ptr<UnaryExpr> expr) { resolve(expr->expr); }
 
 void Resolver::visitVariableExpr(std::shared_ptr<VariableExpr> expr) {
-    if (!scopes.empty() && scopes.back()->count(expr->name.lexeme) && (*(scopes.back()))[expr->name.lexeme] == false) {
+    if (!scopes.empty() && scopes.back().count(expr->name.lexeme) && scopes.back()[expr->name.lexeme] == false) {
         errorHandler.error(expr->name, "Can't read local variable in its own initializer.");
     }
     resolveLocal(expr, expr->name);
@@ -147,11 +147,11 @@ void Resolver::visitClassStmt(std::shared_ptr<ClassStmt> stmt) {
 
     if (stmt->superclass) {
         beginScope();
-        (*scopes.back())["super"] = true;
+        scopes.back()["super"] = true;
     }
 
     beginScope();
-    (*scopes.back())["this"] = true;
+    scopes.back()["this"] = true;
     for (auto method : stmt->methods) {
         resolve(method);
     }

@@ -5,7 +5,7 @@
 struct Resolver : VisitorExpr, VisitorStmt {
     Interpreter &interpreter;
     ErrorHandler &errorHandler;
-    std::vector<std::shared_ptr<std::map<std::string, bool>>> scopes;
+    std::vector<std::map<std::string, bool>> scopes;
 
     Resolver(Interpreter &interpreter, ErrorHandler &errorHandler);
 
