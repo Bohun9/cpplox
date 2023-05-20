@@ -1,6 +1,12 @@
 import glob
 import re
 import subprocess
+import sys
+
+if len(sys.argv) != 2:
+    print(f"usage: {sys.argv[0]} <exe>")
+    sys.exit(1)
+exe = sys.argv[1]
 
 
 def csi(s, n):
@@ -18,7 +24,7 @@ for file in glob.glob("test/**/*.lox", recursive=True):
         for match in re.finditer(r"// err: (.*\n)", source):
             expected_stderr += match.group(1)
 
-        result = subprocess.run(["build/lox", file], capture_output=True, text=True)
+        result = subprocess.run([exe, file], capture_output=True, text=True)
 
         print(f"### {file}: ", end="")
         if expected_stdout != result.stdout or expected_stderr != result.stderr:
